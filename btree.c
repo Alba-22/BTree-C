@@ -7,18 +7,25 @@
 #define MAX_KEYS (4)
 
 struct node {
-  int totalKeys;
-  int keys[MAX_KEYS];
-  struct node *children[MAX_KEYS + 1];
+    int totalKeys;
+    int keys[MAX_KEYS];
+    struct node *children[MAX_KEYS + 1];
 };
 
 BTree* createBTree() {
-  BTree* root = (BTree*) malloc(sizeof(BTree));
-  if (root == NULL) {
-    printf("Error: No memory");
-    exit(1);
-  }
-  (*root) = (BTree) malloc(sizeof(struct node));
-  (*root)->totalKeys = 0;
-  return root;
+    BTree* root = (BTree*) malloc(sizeof(BTree));
+    if (root == NULL) {
+        printf("Error: No memory");
+        exit(1);
+    }
+    (*root) = (BTree) malloc(sizeof(struct node));
+    (*root)->totalKeys = 0;
+    return root;
+}
+
+int isEmptyBTree(BTree *root) {
+    if ((*root)->totalKeys == 0) {
+        return 1;
+    }
+    return 0;
 }
