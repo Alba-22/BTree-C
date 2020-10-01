@@ -1,0 +1,17 @@
+#!/bin/bash
+# This is a compatibility oriented script to create aliases
+# for Windows shell functions to work in a Unix environment
+# when executing the 'a.out' binary
+
+dir=$(dirname "$0")
+if [[ ! -e "${dir}/a.out" ]]; then
+    echo 'a.out does not exist.' >&2
+    exit 1
+fi
+
+cls() { clear; }
+pause() { read -n1; }
+
+export -f cls && export -f pause
+exec ./a.out
+
