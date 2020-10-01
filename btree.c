@@ -13,11 +13,12 @@ struct node {
 };
 
 BTree* createBTree() {
-  BTree* bTree = (BTree*) malloc(sizeof(struct node));
-  if (bTree == NULL) {
-    printf("No memory");
+  BTree* root = (BTree*) malloc(sizeof(BTree));
+  if (root == NULL) {
+    printf("Error: No memory");
     exit(1);
   }
-  (*bTree)->totalKeys = 1;
-  return &bTree;
+  (*root) = (BTree) malloc(sizeof(struct node));
+  (*root)->totalKeys = 0;
+  return root;
 }

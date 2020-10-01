@@ -7,3 +7,4 @@ int removeFromBTree(BTree *root, int value);
 int searchInBTree(BTree *root, int value);
 int isEmptyBTree(BTree *root);
 int totalNodesBTree(BTree *root);
+void inOrderBTree(BTree *root);
