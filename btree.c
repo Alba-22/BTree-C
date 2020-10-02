@@ -29,3 +29,34 @@ int isEmptyBTree(BTree *root) {
     }
     return 0;
 }
+
+int searchInBTree(BTree *root, int value) {
+    int treeLevel = 1, i = 0;
+    BTree aux;
+    aux = (*root);
+    if (aux == NULL || aux->totalKeys == 0) {
+        return 0;
+    }
+    while (treeLevel) {
+        // Search in each key of current node.
+        while (i < aux->totalKeys && aux->keys[i] < value) {
+            i++;
+        }
+        // Check if key is equal to value, if not search in next node
+        if (i < aux->totalKeys && aux->keys[i] == value) {
+            return treeLevel;
+        }
+        else {
+            if (aux->children != NULL) {
+                aux = aux->children[i];
+                i = 0;
+                treeLevel++;
+            }
+            else {
+                return 0;
+            }
+        }
+
+    }
+    return 0;
+}

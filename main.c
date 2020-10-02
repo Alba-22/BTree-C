@@ -1,3 +1,10 @@
+/*
+Grupo DGO 
+Integrantes: 
+Davi Augusto Silva - 11911BCC023 
+Gustavo Vinícius Alba - 11911BCC016 
+Otávio Almeida Leite - 11911BCC010
+*/
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -56,6 +63,17 @@ void main() {
             }
             // Search for a integer in BTree
             else if (option == 4) {
+                int value;
+                printf("Type the desired value to be search:\n");
+                printf("Value: ");
+                scanf("%d", &value);
+                int result = searchInBTree(bt, value);
+                if (result == 0) {
+                    printf("The desired value is not in BTree");
+                }
+                else {
+                    printf("The desired value is in level %d of BTree", result);
+                }
                 endOption();
             }
             // Verify if BTree is empty
