@@ -70,6 +70,17 @@ void main() {
             }
             // Remove integer from BTree
             else if (option == 3) {
+                int value;
+                printf("Type the desired value to insert:\n");
+                printf("Value: ");
+                scanf("%d", &value);
+                int result = removeFromBTree(bt, value);
+                if (result == 0) {
+                    printf("The desired value cannot be removed");
+                }
+                else {
+                    printf("The value %d was removed", value);
+                }
                 endOption();
             }
             // Search for a integer in BTree
@@ -100,16 +111,28 @@ void main() {
             }
             // Total number of Nodes
             else if (option == 6) {
-                endOption();
-            }
-            // Destroy BTree
-            else if (option == 7) {
+                int result = totalNodesBTree(bt);
+                printf("The BTree has %d nodes", result);
                 endOption();
             }
             // Print BTree in order
-            else if (option == 8) {
+            else if (option == 7) {
+                if (isEmptyBTree(bt) == 1) {
+                    printf("The BTree is empty");
+                }
+                else {
+                    inOrderBTree(bt);
+                }
                 endOption();
             }
+            // Destroy BTree
+            else if (option == 8) {
+                freeBTree(bt);
+                printf("The BTree was destroyed");
+                init = 0;
+                endOption();
+            }
+            // Leave program
             else if (option == MAX_OPTIONS) {
                 printf("Leaving...");
                 keep = 0;
@@ -130,8 +153,8 @@ int mainMenu() {
         printf("[04] Search for a integer in BTree |\n");
         printf("[05] Verify if BTree is empty      |\n");
         printf("[06] Total number of Nodes         |\n");
-        printf("[07] Destroy BTree                 |\n");
-        printf("[08] Print BTree in order          |\n");
+        printf("[07] Print BTree in order          |\n");
+        printf("[08] Destroy BTree                 |\n");
         printf("[09] Leave Program                 |\n");
         printf("------------------------------------\n");
         printf("Choice: ");

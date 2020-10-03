@@ -76,3 +76,40 @@ int searchInBTree(BTree *root, int value) {
     }
     return 0;
 }
+
+void freeBTree(BTree *root) {
+    BTree aux = *root;
+    if (isLeafBTree(aux) == 0) {
+        int i;
+        for (i = 0; i < aux->totalKeys; i++) {
+            freeBTree(&(aux->children[i]));
+        }
+        freeBTree(&(aux->children[i]));
+    }
+    free(aux);
+}
+
+int totalNodesBTree(BTree *root) {
+    if (isEmptyBTree(*root)) {
+        return 0;
+    }
+    BTree aux = *root;
+    int count = 1;
+    int i;
+    for (i = 0; i < aux->totalKeys + 1; i++) {
+        count += totalNodesBTree(&(aux->children[i]));
+    }
+    return count;
+}
+
+void inOrderBTree(BTree *root) {
+    BTree aux = *root;
+    if (aux != NULL) {
+        int i;
+        for (i = 0; i < aux->totalKeys; i++) {
+            inOrderBTree(&(aux->children[i]));
+            printf("| %d | ", aux->keys[i]);
+        }
+        inOrderBTree(&(aux->children[i]));
+    }
+}
