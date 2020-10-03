@@ -12,15 +12,25 @@ struct node {
     struct node *children[MAX_KEYS + 1];
 };
 
+BTree createNode();
+
 BTree* createBTree() {
     BTree* root = (BTree*) malloc(sizeof(BTree));
     if (root == NULL) {
         printf("Error: No memory");
         exit(1);
     }
-    (*root) = (BTree) malloc(sizeof(struct node));
-    (*root)->totalKeys = 0;
+    (*root) = createNode();
     return root;
+}
+
+BTree createNode() {
+    BTree newNode = (BTree) malloc(sizeof(struct node));
+    newNode->totalKeys = 0;
+    for (int i = 0; i < MAX_KEYS + 1; i++) {
+        newNode->children[i] = NULL;
+    }
+    return newNode;
 }
 
 int isEmptyBTree(BTree *root) {
@@ -47,7 +57,7 @@ int searchInBTree(BTree *root, int value) {
             return treeLevel;
         }
         else {
-            if (aux->children != NULL) {
+            if (aux->children[i] != NULL) {
                 aux = aux->children[i];
                 i = 0;
                 treeLevel++;
