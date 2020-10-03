@@ -55,6 +55,17 @@ void main() {
             }
             // Insert integer in BTree
             else if (option == 2) {
+                int value;
+                printf("Type the desired value to insert:\n");
+                printf("Value: ");
+                scanf("%d", &value);
+                int result = insertInBTree(bt, value);
+                if (result == 0) {
+                    printf("The desired value cannot be inserted");
+                }
+                else {
+                    printf("The value %d was inserted", value);
+                }
                 endOption();
             }
             // Remove integer from BTree
