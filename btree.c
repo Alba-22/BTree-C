@@ -40,6 +40,12 @@ int isEmptyBTree(BTree *root) {
     return 0;
 }
 
+int isLeafBTree(BTree node) {
+    if (node->children[0] == NULL)
+        return 1;
+    return 0;
+}
+
 int searchInBTree(BTree *root, int value) {
     int treeLevel = 1, i = 0;
     BTree aux;
