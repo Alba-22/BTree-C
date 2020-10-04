@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "btree.h"
 
-#define MAX_KEYS (4)
+#define MAX_KEYS (7)
 
 struct node {
     int totalKeys;
@@ -75,6 +76,127 @@ int searchInBTree(BTree *root, int value) {
 
     }
     return 0;
+}
+
+int split(BTree *root, BTree *parent){
+    // Pega o valor no meio, para tamanhos impares, e o logo anterior ao meio, para tamanhos pares
+    int med = (*root)->keys[(int)floor((MAX_KEYS-1)/2)], medNextIdx = (int)floor((MAX_KEYS-1)/2) + 1;
+    // Guarda tambem o id seguinte, para comecar o laco de preenchimento do novo nodo (proximo laco for)
+    
+    int idx;
+    for(idx = medNextIdx; idx < MAX_KEYS; idx++){
+        (*root)->keys[idx-1] = (*root)->keys[idx];
+    }
+    (*root)->totalKeys--;
+
+
+    // Cria o novo nodo
+    BTree right = createNode();
+    BTree left = *root;
+
+    for(idx = medNextIdx-1; idx < MAX_KEYS-1;  idx++){
+        right->keys[idx - medNextIdx +1] = left->keys[idx];
+        // À medida que os valores vao sendo copiados, a contagem de valores no
+        // nodo novo aumenta, enquanto a no nodo antigo diminui
+        right->totalKeys++;
+        left->totalKeys--;
+    }
+
+    // Movimentacao dos ponteiros do nodo no split
+    for(idx = medNextIdx; idx <= MAX_KEYS; idx++){
+        right->children[idx - medNextIdx] = left->children[idx];
+        left->children[idx] = NULL;
+    }
+
+    if(*parent == left){
+        // Nao tem pai
+        *parent = createNode();
+        (*parent)->children[0] = left;
+        (*parent)->children[1] = right;
+        (*parent)->keys[0] = med;
+        (*parent)->totalKeys++;
+    } else if((*parent)->totalKeys +1 <= MAX_KEYS) {
+        // Insere no pai
+        for (idx = 0; med > (*parent)->keys[idx] && idx < (*parent)->totalKeys; idx++);
+        
+        int idx2;
+        for (idx2 = (*parent)->totalKeys; idx2 > idx; idx2--) {
+            (*parent)->keys[idx2] = (*parent)->keys[idx2-1];
+        }
+        (*parent)->keys[idx] = med;
+        (*parent)->totalKeys++;
+
+        for (idx2 = (*parent)->totalKeys + 1; idx2 > idx+1; idx2--) {
+            (*parent)->children[idx2] = (*parent)->children[idx2-1];
+        }
+        (*parent)->children[idx+1] = right;
+    }
+}
+
+int insertInNode(BTree *root, BTree *parent, int value){
+    // Caso em que o nodo nao esta alocado
+    if (*root == NULL) {
+        return 0;
+    }
+    BTree aux = *root;
+
+    if(aux->totalKeys == MAX_KEYS){
+        //split
+        split(root, parent);
+    }
+
+    // Caso em que o nodo esta alocado, mas nao tem valor nenhum
+    if (aux->totalKeys == 0) {
+        aux->totalKeys++;
+        aux->keys[0] = value;
+        return 1;
+    }
+
+    int i;
+    // Procura o index onde deve acontecer a insercao
+    for (i = 0; value > aux->keys[i] && i < aux->totalKeys; i++);
+    
+    // Tenta descer pelo ponteiro correspondente ao 'child', na posicao que o novo 'value' deveria estar
+    if (insertInNode(&(aux->children[i]), root, value) == 0) {
+        // Se a chamada recursiva retornou '0', o nodo atual é folha
+        printf("Folha!");
+        
+        // Caso seja possivel inserir naquele nodo
+        if (aux->totalKeys < MAX_KEYS -1) {
+            int j;
+            for (j = aux->totalKeys; j > i; j--) {
+                aux->keys[j] = aux->keys[j-1];
+            }
+            aux->keys[i] = value;
+            aux->totalKeys++;
+            return 1;
+        } else {
+            // Caso o nodo esteja cheio, faz o split, e eleva o valor na mediana;
+
+            int idx;
+            for (idx = 0; value > (*root)->keys[idx] && idx < (*root)->totalKeys; idx++);
+                
+            int idx2;
+            for (idx2 = (*root)->totalKeys; idx2 > idx; idx2--) {
+                (*root)->keys[idx2] = (*root)->keys[idx2-1];
+            }
+            (*root)->keys[idx] = value;
+            (*root)->totalKeys++;
+
+
+            split(root, parent);
+        }
+    }
+
+    if((*root)->totalKeys == MAX_KEYS){
+        split(root, parent);
+    }
+    return 1;
+
+}
+
+int insertInBTree(BTree *root, int value){
+    insertInNode(root, root, value);
 }
 
 void freeBTree(BTree *root) {
