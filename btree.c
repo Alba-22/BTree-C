@@ -5,7 +5,7 @@
 
 #include "btree.h"
 
-#define MAX_KEYS (7)
+#define MAX_KEYS (3)
 
 struct node {
     int totalKeys;
@@ -28,7 +28,8 @@ BTree* createBTree() {
 BTree createNode() {
     BTree newNode = (BTree) malloc(sizeof(struct node));
     newNode->totalKeys = 0;
-    for (int i = 0; i < MAX_KEYS + 1; i++) {
+    int i;
+    for (i = 0; i < MAX_KEYS + 1; i++) {
         newNode->children[i] = NULL;
     }
     return newNode;
@@ -49,20 +50,20 @@ int isLeafBTree(BTree node) {
 
 int searchInBTree(BTree *root, int value) {
     int treeLevel = 1, i = 0;
-    BTree aux;
-    aux = (*root);
+    BTree aux = (*root);
     if (aux == NULL || aux->totalKeys == 0) {
         return 0;
     }
     while (treeLevel) {
-        // Search in each key of current node.
+        // Porcura em cada chave do nodo atual.
         while (i < aux->totalKeys && aux->keys[i] < value) {
             i++;
         }
-        // Check if key is equal to value, if not search in next node
+        // Verifica se a chave é igual ao valor passado.
         if (i < aux->totalKeys && aux->keys[i] == value) {
             return treeLevel;
         }
+        // Caso não ache o valor no nodo atual, procura no próximo nodo.
         else {
             if (aux->children[i] != NULL) {
                 aux = aux->children[i];
@@ -159,7 +160,6 @@ int insertInNode(BTree *root, BTree *parent, int value){
     // Tenta descer pelo ponteiro correspondente ao 'child', na posicao que o novo 'value' deveria estar
     if (insertInNode(&(aux->children[i]), root, value) == 0) {
         // Se a chamada recursiva retornou '0', o nodo atual é folha
-        printf("Folha!");
         
         // Caso seja possivel inserir naquele nodo
         if (aux->totalKeys < MAX_KEYS -1) {
@@ -201,27 +201,32 @@ int insertInBTree(BTree *root, int value){
 
 void freeBTree(BTree *root) {
     BTree aux = *root;
+    // Se não for folha, irá continuar descendo pela árvore
     if (isLeafBTree(aux) == 0) {
         int i;
-        for (i = 0; i < aux->totalKeys; i++) {
+        // Percorre os filhos do nó (totalKeys + 1 filhos) liberando recursivamente
+        for (i = 0; i < aux->totalKeys + 1; i++) {
             freeBTree(&(aux->children[i]));
+            // Necessário atribuir NULL ao filho para que a verificação de ser folha funcione
+            aux->children[i] = NULL;
         }
-        freeBTree(&(aux->children[i]));
     }
-    free(aux);
+    // Se for folha, irá liberar o espaço alocado
+    else {
+        free(aux);
+    }
 }
 
 int totalNodesBTree(BTree *root) {
-    if (isEmptyBTree(*root)) {
-        return 0;
-    }
     BTree aux = *root;
-    int count = 1;
-    int i;
-    for (i = 0; i < aux->totalKeys + 1; i++) {
-        count += totalNodesBTree(&(aux->children[i]));
+    if (aux != NULL) {
+        int count = 1;
+        int i;
+        for (i = 0; i < aux->totalKeys + 1; i++) {
+            count += totalNodesBTree(&(aux->children[i]));
+        }
+        return count;
     }
-    return count;
 }
 
 void inOrderBTree(BTree *root) {

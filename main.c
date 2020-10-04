@@ -70,17 +70,17 @@ void main() {
             }
             // Remove integer from BTree
             else if (option == 3) {
-                int value;
-                printf("Type the desired value to insert:\n");
-                printf("Value: ");
-                scanf("%d", &value);
-                int result = removeFromBTree(bt, value);
-                if (result == 0) {
-                    printf("The desired value cannot be removed");
-                }
-                else {
-                    printf("The value %d was removed", value);
-                }
+                // int value;
+                // printf("Type the desired value to insert:\n");
+                // printf("Value: ");
+                // scanf("%d", &value);
+                // int result = removeFromBTree(bt, value);
+                // if (result == 0) {
+                //     printf("The desired value cannot be removed");
+                // }
+                // else {
+                //     printf("The value %d was removed", value);
+                // }
                 endOption();
             }
             // Search for a integer in BTree
