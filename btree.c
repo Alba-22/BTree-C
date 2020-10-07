@@ -243,26 +243,31 @@ void inOrderBTree(BTree *root) {
 
 
 void dealUnderflow(BTree *root, BTree *parent){
-    // TODO: root vazia? nodo vazio?
 
-
-    // Pega o index do nodo atual no nodo pai
-    int i; //index do nodo atual no nodo pai
-    for(i = 0; i < MAX_KEYS+1; i++){
-        if((*parent)->children[i] == *root){
-            break;
-        };
+    // Root vazia
+    if(*root == *parent && (*root)->totalKeys == 0){
+        int a = 1; // 
+        BTree *aux = root;
+        *root = (*root)->children[0];
+        free(*aux);
     }
-
-    if((*root)->totalKeys < ceil(MAX_KEYS/2.0) && *root != *parent){
+    // Underflow em nodo
+    else if((*root)->totalKeys < floor(MAX_KEYS/2.0) && *root != *parent){
         // Underflow
+
+        // Pega o index do nodo atual no nodo pai
+        int i; //index do nodo atual no nodo pai
+        for(i = 0; i < MAX_KEYS+1; i++){
+            if((*parent)->children[i] == *root){
+                break;
+            };
+        }
 
         // Pega emprestado do irmao da esquerda, se der
             // Maior valor do irmao sobre para separador no pai, 
             // separador do pai desce para o nodo
             // [!] Atencao aos ponteiros quando nao for folha!
-        int teste = ceil(MAX_KEYS/2.0);
-        if(i > 0 && (*parent)->children[i-1]->totalKeys >= ceil(MAX_KEYS/2.0)){
+        if(i > 0 && (*parent)->children[i-1]->totalKeys > floor(MAX_KEYS/2.0)){
             BTree leftBrother = (*parent)->children[i-1];
             int j;
 
@@ -283,10 +288,10 @@ void dealUnderflow(BTree *root, BTree *parent){
                 (*root)->children[j] = (*root)->children[j-1];
             }
             // Insere o ponteiro, movendo o filho do irmao para o nodo
-            (*root)->children[0] = leftBrother->children[leftBrother->totalKeys + 1];
+            (*root)->children[0] = leftBrother->children[leftBrother->totalKeys];
 
             // Desaponta o ponteiro, retirando o filho do irmao, que agora ja esta no nodo
-            leftBrother->children[leftBrother->totalKeys + 1] = NULL;
+            leftBrother->children[leftBrother->totalKeys] = NULL;
             leftBrother->totalKeys--;
         }
 
@@ -294,7 +299,7 @@ void dealUnderflow(BTree *root, BTree *parent){
             // Menor valor do irmao sobre para separador no pai,
             // separador do pai desce para o nodo
             // [!] Atencao aos ponteiros quando nao for folha!
-        else if(i < MAX_KEYS && (*parent)->children[i+1]->totalKeys >= ceil(MAX_KEYS/2.0)){
+        else if(i < (*parent)->totalKeys && (*parent)->children[i+1]->totalKeys > floor(MAX_KEYS/2.0)){
             BTree rightBrother = (*parent)->children[i+1];
 
             // Valor separador entra no final do nodo
@@ -358,15 +363,16 @@ void dealUnderflow(BTree *root, BTree *parent){
                 leftBrother->totalKeys += (*root)->totalKeys;
 
                 // Move todos os ponteiros e valores do pai uma posicao p a esquerda, a partir do removido
-                for(j = i; j < (*parent)->totalKeys; j++){
+                BTree aux = *root;
+                for(j = i; j <= (*parent)->totalKeys; j++){
                     (*parent)->children[j] = (*parent)->children[j+1];
                 }
                 (*parent)->totalKeys--;
-                for(j = 0; j < (*parent)->totalKeys; j++){
+                for(j = i-1; j < (*parent)->totalKeys; j++){
                     (*parent)->keys[j] = (*parent)->keys[j+1];
                 }
 
-                free(*root);
+                free(aux);
 
             }
             // Tenta merge com o irmao da direita
@@ -382,14 +388,15 @@ void dealUnderflow(BTree *root, BTree *parent){
                     (*root)->keys[(*root)->totalKeys + j] = rightBrother->keys[j];
                 }
 
-                // Move os ponteiros do dono para o irmao
+                // Move os ponteiros do irmao para o nodo
                 for(j = 0; j < rightBrother->totalKeys + 1; j++){
                     (*root)->children[(*root)->totalKeys + j] = rightBrother->children[j];
                 }
                 (*root)->totalKeys += rightBrother->totalKeys;
 
                 // Move todos os ponteiros e valores do pai uma posicao p a esquerda, a partir do removido
-                for(j = i; j < (*parent)->totalKeys; j++){
+                
+                for(j = i+1; j <= (*parent)->totalKeys; j++){
                     (*parent)->children[j] = (*parent)->children[j+1];
                 }
                 (*parent)->totalKeys--;
@@ -436,7 +443,7 @@ int removeFromNode(BTree *root, BTree *parent, int value) {
             return 0;
         }
         int j;
-        for(j = i; j < MAX_KEYS-1; j++){
+        for(j = i; j < (*root)->totalKeys; j++){
             (*root)->keys[j] = (*root)->keys[j+1];
         }
         (*root)->totalKeys--;
@@ -471,7 +478,7 @@ int removeFromNode(BTree *root, BTree *parent, int value) {
     // Trata underflow no nodo atual
     dealUnderflow(root, parent);
 
-    return 1; //teste
+    return 1; //teste9
 }
 
 int removeFromBTree(BTree *root, int value) {
