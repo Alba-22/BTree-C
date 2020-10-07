@@ -247,9 +247,9 @@ void dealUnderflow(BTree *root, BTree *parent){
     // Root vazia
     if(*root == *parent && (*root)->totalKeys == 0){
         int a = 1; // 
-        BTree *aux = root;
+        BTree aux = *root;
         *root = (*root)->children[0];
-        free(*aux);
+        free(aux);
     }
     // Underflow em nodo
     else if((*root)->totalKeys < floor(MAX_KEYS/2.0) && *root != *parent){
