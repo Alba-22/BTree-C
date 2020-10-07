@@ -406,9 +406,6 @@ void dealUnderflow(BTree *root, BTree *parent){
 
                 free(rightBrother);
             }
-
-
-
         }
     }
 }
@@ -429,7 +426,7 @@ int getAndRemoveMax(BTree *root, BTree *parent, int *max){
     }
     // Tratar underflow no nodo atual
     dealUnderflow(root, parent);
-    return returnedValue; //?
+    return returnedValue;
 }
 
 int removeFromNode(BTree *root, BTree *parent, int value) {
@@ -468,7 +465,9 @@ int removeFromNode(BTree *root, BTree *parent, int value) {
 
             // Busca o maior elemento da sub-arvore a esquerda,
             // coloca no lugar de keys[i], e deleta do nó folha
-            getAndRemoveMax(&((*root)->children[i]), root, &( (*root)->keys[i] ) );
+            if(getAndRemoveMax(&((*root)->children[i]), root, &( (*root)->keys[i] ) ) == 0){
+                return 0;
+            }
 
             // Trocou de lugar e removeu, com sucesso
             // Ja lidou com underflow dos filhos dentro da funcao 'getAndRemoveMax'
