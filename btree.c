@@ -5,7 +5,7 @@
 
 #include "btree.h"
 
-#define MAX_KEYS (3)
+#define MAX_KEYS (5)
 
 struct node {
     int totalKeys;
@@ -81,7 +81,7 @@ int searchInBTree(BTree *root, int value) {
 
 int split(BTree *root, BTree *parent){
     // Pega o valor no meio, para tamanhos impares, e o logo anterior ao meio, para tamanhos pares
-    int med = (*root)->keys[(int)floor((MAX_KEYS-1)/2)], medNextIdx = (int)floor((MAX_KEYS-1)/2) + 1;
+    int med = (*root)->keys[(int)floor((MAX_KEYS-1)/2.0)], medNextIdx = (int)floor((MAX_KEYS-1)/2.0) + 1;
     // Guarda tambem o id seguinte, para comecar o laco de preenchimento do novo nodo (proximo laco for)
     
     int idx;
@@ -196,7 +196,7 @@ int insertInNode(BTree *root, BTree *parent, int value){
 }
 
 int insertInBTree(BTree *root, int value){
-    insertInNode(root, root, value);
+    return insertInNode(root, root, value);
 }
 
 void freeBTree(BTree *root) {
@@ -239,4 +239,241 @@ void inOrderBTree(BTree *root) {
         }
         inOrderBTree(&(aux->children[i]));
     }
+}
+
+
+void dealUnderflow(BTree *root, BTree *parent){
+    // TODO: root vazia? nodo vazio?
+
+
+    // Pega o index do nodo atual no nodo pai
+    int i; //index do nodo atual no nodo pai
+    for(i = 0; i < MAX_KEYS+1; i++){
+        if((*parent)->children[i] == *root){
+            break;
+        };
+    }
+
+    if((*root)->totalKeys < ceil(MAX_KEYS/2.0) && *root != *parent){
+        // Underflow
+
+        // Pega emprestado do irmao da esquerda, se der
+            // Maior valor do irmao sobre para separador no pai, 
+            // separador do pai desce para o nodo
+            // [!] Atencao aos ponteiros quando nao for folha!
+        int teste = ceil(MAX_KEYS/2.0);
+        if(i > 0 && (*parent)->children[i-1]->totalKeys >= ceil(MAX_KEYS/2.0)){
+            BTree leftBrother = (*parent)->children[i-1];
+            int j;
+
+            // Move os valores chave, para insercao no inicio
+            for(j = (*root)->totalKeys; j > 0; j--){
+                (*root)->keys[j] = (*root)->keys[j-1];
+            }
+            
+            // valor separador entra no nodo
+            (*root)->keys[0] = (*parent)->keys[i-1];
+            (*root)->totalKeys++;
+            
+            // maior valor do irmao vai para a posicao de separador
+            (*parent)->keys[i-1] = leftBrother->keys[leftBrother->totalKeys-1];
+
+            // Move os ponteiros, para insercao no inicio
+            for(j = (*root)->totalKeys + 1; j > 0; j--){
+                (*root)->children[j] = (*root)->children[j-1];
+            }
+            // Insere o ponteiro, movendo o filho do irmao para o nodo
+            (*root)->children[0] = leftBrother->children[leftBrother->totalKeys + 1];
+
+            // Desaponta o ponteiro, retirando o filho do irmao, que agora ja esta no nodo
+            leftBrother->children[leftBrother->totalKeys + 1] = NULL;
+            leftBrother->totalKeys--;
+        }
+
+        // Se nao der na esquerda, tenta no irmao da direita
+            // Menor valor do irmao sobre para separador no pai,
+            // separador do pai desce para o nodo
+            // [!] Atencao aos ponteiros quando nao for folha!
+        else if(i < MAX_KEYS && (*parent)->children[i+1]->totalKeys >= ceil(MAX_KEYS/2.0)){
+            BTree rightBrother = (*parent)->children[i+1];
+
+            // Valor separador entra no final do nodo
+            (*root)->keys[(*root)->totalKeys] = (*parent)->keys[i];
+            (*root)->totalKeys++;
+
+            // Menor valor do irmao a direita vai para a posicao de separador
+            (*parent)->keys[i] = rightBrother->keys[0];
+
+            //Insere o primeiro filho do irmao no final do nodo
+            (*root)->children[(*root)->totalKeys] = rightBrother->children[0];
+
+            // Move os ponteiros do irmao, retirando o filho que agora ja esta no nodo
+            int j;
+            for(j = 0; j < rightBrother->totalKeys; j++){
+                rightBrother->children[j] = rightBrother->children[j+1];
+            }
+            rightBrother->children[j] = NULL;
+            rightBrother->totalKeys--;
+
+            // Move os valores do irmao
+            for(j = 0; j < rightBrother->totalKeys; j++){
+                rightBrother->keys[j] = rightBrother->keys[j+1];
+            }
+        }
+
+
+        // Nenhum dos irmaos pode emprestar (merge)
+            // Juntando com o irmao da esquerda, em ordem,
+            // (irmao da esquerda) + (separador) + (nodo em underflow)
+            // movimentando os elementos do pai para a retirada do separador
+            // [!] Atencao aos ponteiros quando nao for folha!
+
+            // Juntando com o irmao da direita, em ordem,
+            // (nodo em underflow) + (separador) + (irmao da direita)
+            // movimentando os elementos do pai para a retirada do separador
+            // [!] Atencao aos ponteiros quando nao for folha!
+
+            // Se o pai for raiz, e agora nao tiver mais elementos
+                // Liberar a raiz e fazer o ponteiro apontar para o nodo unido nessa operacao
+        else{
+            // merge
+
+            // Tenta merge com o irmao da esquerda
+            if(i > 0 && (*parent)->children[i-1] != NULL){
+                BTree leftBrother = (*parent)->children[i-1];
+
+                leftBrother->keys[leftBrother->totalKeys] = (*parent)->keys[i-1];
+                leftBrother->totalKeys++;
+
+                // Move os valores do nodo para o irmao
+                int j;
+                for(j = 0; j < (*root)->totalKeys; j++){
+                    leftBrother->keys[leftBrother->totalKeys + j] = (*root)->keys[j];
+                }
+
+                // Move os ponteiros do dono para o irmao
+                for(j = 0; j < (*root)->totalKeys + 1; j++){
+                    leftBrother->children[leftBrother->totalKeys + j] = (*root)->children[j];
+                }
+                leftBrother->totalKeys += (*root)->totalKeys;
+
+                // Move todos os ponteiros e valores do pai uma posicao p a esquerda, a partir do removido
+                for(j = i; j < (*parent)->totalKeys; j++){
+                    (*parent)->children[j] = (*parent)->children[j+1];
+                }
+                (*parent)->totalKeys--;
+                for(j = 0; j < (*parent)->totalKeys; j++){
+                    (*parent)->keys[j] = (*parent)->keys[j+1];
+                }
+
+                free(*root);
+
+            }
+            // Tenta merge com o irmao da direita
+            else if(i < MAX_KEYS && (*parent)->children[i+1] != NULL){
+                BTree rightBrother = (*parent)->children[i+1];
+
+                (*root)->keys[(*root)->totalKeys] = (*parent)->keys[i];
+                (*root)->totalKeys++;
+
+                // Move os valores do nodo para o irmao
+                int j;
+                for(j = 0; j < rightBrother->totalKeys; j++){
+                    (*root)->keys[(*root)->totalKeys + j] = rightBrother->keys[j];
+                }
+
+                // Move os ponteiros do dono para o irmao
+                for(j = 0; j < rightBrother->totalKeys + 1; j++){
+                    (*root)->children[(*root)->totalKeys + j] = rightBrother->children[j];
+                }
+                (*root)->totalKeys += rightBrother->totalKeys;
+
+                // Move todos os ponteiros e valores do pai uma posicao p a esquerda, a partir do removido
+                for(j = i; j < (*parent)->totalKeys; j++){
+                    (*parent)->children[j] = (*parent)->children[j+1];
+                }
+                (*parent)->totalKeys--;
+                for(j = 0; j < (*parent)->totalKeys; j++){
+                    (*parent)->keys[j] = (*parent)->keys[j+1];
+                }
+
+                free(rightBrother);
+            }
+
+
+
+        }
+    }
+}
+
+int removeFromNode(BTree *root, BTree *parent, int value);
+
+int getAndRemoveMax(BTree *root, BTree *parent, int *max){
+    // Para que funcione trocando os valores no caso da inserção no meio da árvore b,
+    // basta passar o endereço do separador original como 'max'
+    // Dessa forma, ao chegar no final da recursão, o valor a ser removido no meio da árvore já será trocado pelo seu
+    // predecessor em ordem, nao comprometendo futuros rebalanceamentos que possam ocorrer na volta das chamadas recursivas
+    int returnedValue;
+    if(isLeafBTree(*root)){
+        *max = (*root)->keys[(*root)->totalKeys-1]; 
+        returnedValue = removeFromNode(root, parent, *max);
+    }else{
+        returnedValue = getAndRemoveMax(&((*root)->children[(*root)->totalKeys]), root, max);
+    }
+    // Tratar underflow no nodo atual
+    dealUnderflow(root, parent);
+    return returnedValue; //?
+}
+
+int removeFromNode(BTree *root, BTree *parent, int value) {
+    if(isLeafBTree(*root)){
+        // O nodo atual e folha
+        int i;
+        //Busca o valor
+        for(i = 0; value > (*root)->keys[i] && i < (*root)->totalKeys; i++);
+        if (i >= (*root)->totalKeys || value < (*root)->keys[i]){
+            // Not found
+            return 0;
+        }
+        int j;
+        for(j = i; j < MAX_KEYS-1; j++){
+            (*root)->keys[j] = (*root)->keys[j+1];
+        }
+        (*root)->totalKeys--;
+
+        // Removido com sucesso;
+    }else{
+        // Nao e folha
+        // Verifica se o valor esta no nodo
+        int i;
+        for(i = 0; value > (*root)->keys[i] && i < (*root)->totalKeys; i++);
+
+        if(i == (*root)->totalKeys || value < (*root)->keys[i]){
+            // O valor nao esta no nodo, tenta excluir no filho em que poderia estar
+            int removed = removeFromNode(&((*root)->children[i]), root, value);
+            if(!removed){
+                // Nao encontrou o valor na arvore
+                // Not found;
+                return 0;
+            }
+        }else{
+            // Encontrou o valor a ser excluido, no index 'i'
+
+            // Busca o maior elemento da sub-arvore a esquerda,
+            // coloca no lugar de keys[i], e deleta do nó folha
+            int returnedValue = getAndRemoveMax(&((*root)->children[i]), root, &( (*root)->keys[i] ) );
+
+            // Trocou de lugar e removeu, com sucesso
+            // Ja lidou com underflow dos filhos dentro da funcao 'getAndRemoveMax'
+        }
+    }
+
+    // Trata underflow no nodo atual
+    dealUnderflow(root, parent);
+
+    return 1; //teste
+}
+
+int removeFromBTree(BTree *root, int value) {
+    return removeFromNode(root, root, value);
 }
