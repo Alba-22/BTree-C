@@ -79,7 +79,7 @@ int searchInBTree(BTree *root, int value) {
     return 0;
 }
 
-int split(BTree *root, BTree *parent){
+void split(BTree *root, BTree *parent){
     // Pega o valor no meio, para tamanhos impares, e o logo anterior ao meio, para tamanhos pares
     int med = (*root)->keys[(int)floor((MAX_KEYS-1)/2.0)], medNextIdx = (int)floor((MAX_KEYS-1)/2.0) + 1;
     // Guarda tambem o id seguinte, para comecar o laco de preenchimento do novo nodo (proximo laco for)
@@ -227,6 +227,7 @@ int totalNodesBTree(BTree *root) {
         }
         return count;
     }
+    return 0;
 }
 
 void inOrderBTree(BTree *root) {
@@ -246,7 +247,6 @@ void dealUnderflow(BTree *root, BTree *parent){
 
     // Root vazia
     if(*root == *parent && (*root)->totalKeys == 0){
-        int a = 1; // 
         BTree aux = *root;
         *root = (*root)->children[0];
         free(aux);
@@ -468,7 +468,7 @@ int removeFromNode(BTree *root, BTree *parent, int value) {
 
             // Busca o maior elemento da sub-arvore a esquerda,
             // coloca no lugar de keys[i], e deleta do nó folha
-            int returnedValue = getAndRemoveMax(&((*root)->children[i]), root, &( (*root)->keys[i] ) );
+            getAndRemoveMax(&((*root)->children[i]), root, &( (*root)->keys[i] ) );
 
             // Trocou de lugar e removeu, com sucesso
             // Ja lidou com underflow dos filhos dentro da funcao 'getAndRemoveMax'
