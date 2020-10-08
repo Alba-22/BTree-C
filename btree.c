@@ -36,7 +36,7 @@ BTree createNode() {
 }
 
 int isEmptyBTree(BTree *root) {
-    if ((*root)->totalKeys == 0) {
+    if (*root == NULL || (*root)->totalKeys == 0) {
         return 1;
     }
     return 0;
@@ -85,7 +85,7 @@ void split(BTree *root, BTree *parent){
     // Guarda tambem o id seguinte, para comecar o laco de preenchimento do novo nodo (proximo laco for)
     
     int idx;
-    for(idx = medNextIdx; idx < MAX_KEYS; idx++){
+    for(idx = medNextIdx; idx < MAX_KEYS; idx++){ //OK
         (*root)->keys[idx-1] = (*root)->keys[idx];
     }
     (*root)->totalKeys--;
@@ -95,7 +95,7 @@ void split(BTree *root, BTree *parent){
     BTree right = createNode();
     BTree left = *root;
 
-    for(idx = medNextIdx-1; idx < MAX_KEYS-1;  idx++){
+    for(idx = medNextIdx-1; idx < MAX_KEYS-1;  idx++){ //OK
         right->keys[idx - medNextIdx +1] = left->keys[idx];
         // À medida que os valores vao sendo copiados, a contagem de valores no
         // nodo novo aumenta, enquanto a no nodo antigo diminui
@@ -104,7 +104,7 @@ void split(BTree *root, BTree *parent){
     }
 
     // Movimentacao dos ponteiros do nodo no split
-    for(idx = medNextIdx; idx <= MAX_KEYS; idx++){
+    for(idx = medNextIdx; idx <= MAX_KEYS; idx++){ // OK
         right->children[idx - medNextIdx] = left->children[idx];
         left->children[idx] = NULL;
     }
@@ -121,13 +121,13 @@ void split(BTree *root, BTree *parent){
         for (idx = 0; med > (*parent)->keys[idx] && idx < (*parent)->totalKeys; idx++);
         
         int idx2;
-        for (idx2 = (*parent)->totalKeys; idx2 > idx; idx2--) {
+        for (idx2 = (*parent)->totalKeys; idx2 > idx; idx2--) { //OK
             (*parent)->keys[idx2] = (*parent)->keys[idx2-1];
         }
         (*parent)->keys[idx] = med;
         (*parent)->totalKeys++;
 
-        for (idx2 = (*parent)->totalKeys + 1; idx2 > idx+1; idx2--) {
+        for (idx2 = (*parent)->totalKeys; idx2 > idx+1; idx2--) { //!OK
             (*parent)->children[idx2] = (*parent)->children[idx2-1];
         }
         (*parent)->children[idx+1] = right;
@@ -481,5 +481,9 @@ int removeFromNode(BTree *root, BTree *parent, int value) {
 }
 
 int removeFromBTree(BTree *root, int value) {
-    return removeFromNode(root, root, value);
+    int returnedValue = removeFromNode(root, root, value);
+    if(*root == NULL){ // Caso tenha removido o unico elemento, cuida para nao liberar a arvore
+        *root = createNode();
+    }
+    return returnedValue;
 }
